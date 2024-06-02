@@ -89,6 +89,11 @@
                 position: absolute;
                 color: #fd6060;
             }
+            .clockEle {
+                display: block;
+                position: absolute;
+                color: #db8dff;
+            }
         </style>
     </head>
     <body>
@@ -228,7 +233,31 @@
                     this.ele.style.top = this.y+"px"
                 }
                 use() {
-                    increaseSpeed(1.5);
+                    increaseSpeed(1.4);
+                    this.ele.remove();
+                }
+            }
+
+            class TimeBonus {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.ele = document.createElement("div");
+                    document.body.appendChild(this.ele);
+                    this.ele.classList.add("fa-solid", "fa-clock", "fa-3x", "clockEle");
+                    this.updatePosition();
+                }
+                move(xVar, yVar) {
+                    this.x += MAIN_SPEED_OBJ*xVar;
+                    this.y += MAIN_SPEED_OBJ*yVar;
+                    this.updatePosition();
+                }
+                updatePosition() {
+                    this.ele.style.left = this.x+"px";
+                    this.ele.style.top = this.y+"px"
+                }
+                use() {
+                    addTime(10);
                     this.ele.remove();
                 }
             }
@@ -236,6 +265,11 @@
             function increaseSpeed(pc) {
                 MAIN_SPEED*=pc;
                 MAIN_SPEED_OBJ*=pc;
+            }
+
+            function addTime(nTime) {
+                timer+=nTime;
+                timerDOM.textContent = timer;
             }
 
             const myPoint = new CordsPoint(document.getElementById("point"));
@@ -284,13 +318,19 @@
                         _speedup.use();
                     }
                 }
+                for (let _timeBonus of timeBonusList) {
+                    _timeBonus.move(mx, my);
+                    if (colision(_timeBonus.ele, centerUser) && !endGame) {
+                        _timeBonus.use();
+                    }
+                }
                 requestAnimationFrame(movePoint);
             }
             requestAnimationFrame(movePoint);   
 
             var elementsList = [];
 
-            const NUM_ELEMENTS = prompt("Ingresa el grado de dificultad\n(Fácil: 5-15, Medio: 15-30, Difícil: 30-50, Imposible: +50)");
+            const NUM_ELEMENTS = prompt("Ingresa el grado de dificultad\n(Fácil: 10-20, Medio: 20-40, Difícil: 40-60, Imposible: +60)");
 
             const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
             const BOUNDS = {
@@ -308,6 +348,16 @@
                 let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
 
                 speedUpsList.push(new SpeedUp(posX, posY));
+            }
+
+            const NUM_TIMES_BONUS = 5;
+            timeBonusList = [];
+
+            for (let i = 0; i < NUM_TIMES_BONUS; ++i) {
+                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                speedUpsList.push(new TimeBonus(posX, posY));
             }
 
             var upBoard = document.getElementById("upBoard");
