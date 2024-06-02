@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>MyGame</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+        <style>
+            body {
+                overflow: hidden;
+                margin: 0;
+            }
+            #upBoard {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                width: 10vw;
+                aspect-ratio: 1/1;
+                background-color: rgb(255, 248, 238);
+                border-radius: 10px;
+            }
+            #point {
+                background-color: black;
+                border-radius: 50%;
+                width: 4%;
+                aspect-ratio: 1/1;
+                position: relative;
+                transform: translate(-50%, -50%);
+            }
+            .center {
+                background: #bdc3c7;
+                position: absolute;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                width: 10vw;
+                aspect-ratio: 1/1;
+            }
+            #centerUser {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+            }
+            .eleMap {
+                background: #90a6b5;
+                position: absolute;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                width: 8vw;
+                aspect-ratio: 1/1;
+            }
+            #counter {
+                font-family: "Montserrat";
+                font-weight: 800;
+                font-size: 25px;
+            }
+            #counterDiv {
+                margin: 0;
+                position: absolute;
+                bottom: 10px;
+                width: 100vw;
+                display: flex;
+                justify-content: center;
+            }
+            #timerDiv {
+                margin: 0;
+                position: absolute;
+                top: 10px;
+                width: 100vw;
+                display: flex;
+                justify-content: center;
+                font-family: "Montserrat";
+                font-weight: 800;
+                font-size: 25px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="upBoard">
+            <div id="point"></div>
+        </div>
+        <i id="centerUser" class="fa-solid fa-khanda fa-4x"></i>
+        <div id="counterDiv">
+            <div id="counter">0</div>
+        </div>
+
+        <div id="timerDiv">
+            <span id="timer">60</span><span>s</span>
+        </div>
+
+        <script src="https://kit.fontawesome.com/6e52da61e8.js" crossorigin="anonymous"></script>
+        <script>
+
+            // Utilities
+            function randomIntFromInterval(min, max) { // min and max included 
+                return Math.floor(Math.random() * (max - min + 1) + min);
+            }
+
+            function colision(eleA, eleB) {
+                var rectA = eleA.getBoundingClientRect();
+                var rectB = eleB.getBoundingClientRect();
+        
+                return (
+                  rectA.left < rectB.right &&
+                  rectA.right > rectB.left &&
+                  rectA.top < rectB.bottom &&
+                  rectA.bottom > rectB.top
+                );
+            }
+
+            // Center of the screen
+            const SCREEN_CENTER = {
+                x: window.innerWidth/2,
+                y: window.innerHeight/2
+            }
+
+            // Set this to the point speed you want
+            const MAIN_SPEED = 0.05;
+            const MAIN_SPEED_OBJ = 10;
+
+            class CordsPoint {
+                constructor(element) {
+                    this.x = 50; 
+                    this.y = 50;
+                    this.ele = element;
+                    this.updatePosition();
+                }
+                move(xVar, yVar) {
+                    let moveX = false;
+                    let moveY = false;
+                    if (this.canMoveX(xVar)) {
+                        this.x += MAIN_SPEED*xVar;
+                        moveX = true;
+                    }
+                    if (this.canMoveY(yVar)) {
+                        this.y += MAIN_SPEED*yVar;
+                        moveY = true;
+                    }
+                    this.updatePosition();
+                    return [moveX, moveY];
+                }
+                canMoveX(xVar) {
+                    if (this.x < 100 && this.x > 0) return true;
+                    else if (this.x >= 100 && xVar < 0) return true;
+                    else if (this.x <= 0 && xVar > 0) return true;
+                    else return false;
+                }
+                canMoveY(yVar) {
+                    if (this.y < 100 && this.y > 0) return true;
+                    else if (this.y >= 100 && yVar < 0) return true;
+                    else if (this.y <= 0 && yVar > 0) return true;
+                    else return false;
+                }
+                updatePosition() {
+                    this.ele.style.left = this.x+"%";
+                    this.ele.style.top = this.y+"%";
+                }
+            }
+
+            class Element {
+                constructor(x, y, element) {
+                    this.x = x;
+                    this.y = y;
+                    this.ele = document.createElement("div");
+                    document.body.appendChild(this.ele);
+                    this.ele.classList.add("eleMap");
+                    this.updatePosition();
+                }
+                move(xVar, yVar) {
+                    this.x += MAIN_SPEED_OBJ*xVar;
+                    this.y += MAIN_SPEED_OBJ*yVar;
+                    this.updatePosition();
+                }
+                updatePosition() {
+                    this.ele.style.left = this.x+"px";
+                    this.ele.style.top = this.y+"px"
+                }
+            }
+
+            const myPoint = new CordsPoint(document.getElementById("point"));
+
+            var mouseX = window.innerWidth/2;
+            var mouseY = window.innerHeight/2;
+
+            var centerUser = document.getElementById("centerUser");
+
+            window.addEventListener("mousemove", function(e) {
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+            })
+
+            var count = 0;
+            var counterDOM = document.getElementById("counter");
+            var timer = 60;
+            var timerDOM = document.getElementById("timer");
+            var endGame = false;
+
+            function movePoint(){
+                let xVariation = (mouseX - SCREEN_CENTER.x)/SCREEN_CENTER.x;
+                let yVariation = (mouseY - SCREEN_CENTER.y)/SCREEN_CENTER.y;
+                centerUser.style.transform = `translate(-50%, -50%) rotate(${90+(180/Math.PI)*Math.atan2(mouseY - SCREEN_CENTER.y, mouseX - SCREEN_CENTER.x)}deg)`
+                let moves = myPoint.move(xVariation, yVariation);
+                let mx = 0;
+                let my = 0;
+                if (moves[0]) mx = -xVariation;
+                if (moves[1]) my = -yVariation;
+
+                for (let i = 0; i < NUM_ELEMENTS; ++i) {
+                    elementsList[i].move(mx, my);
+                    if (colision(elementsList[i].ele, centerUser) && !endGame) {
+                        ++count;
+                        counterDOM.textContent = count;
+                        elementsList[i].ele.remove();
+                        elementsList[i] = new Element(randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive), randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive))
+                    }
+                }
+                requestAnimationFrame(movePoint);
+            }
+            requestAnimationFrame(movePoint);   
+
+
+            var elementsList = [];
+
+            const NUM_ELEMENTS = 75;
+            const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
+            const BOUNDS = {
+                xPositive: (DIM_BOARD-window.innerWidth)/2+window.innerWidth,
+                xNegative: -(DIM_BOARD-window.innerWidth)/2,
+                yPositive: (DIM_BOARD-window.innerHeight)/2+window.innerHeight,
+                yNegative: -(DIM_BOARD-window.innerHeight)/2
+            }
+
+            for (let i = 0; i < NUM_ELEMENTS; i++) {
+                elementsList.push(new Element(randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive), randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive)));
+            }
+
+            var intervalTimer = setInterval(function() {
+                --timer;
+                timerDOM.textContent = timer;
+                if (timer == 0) {
+                    alert("Time Over!");
+                    endGame = true;
+                    clearInterval(intervalTimer);
+                }
+            }, 1000)
+
+
+        </script>
+    </body>
+</html>
