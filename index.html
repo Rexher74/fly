@@ -82,6 +82,10 @@
                 font-weight: 800;
                 font-size: 25px;
             }
+            .speedupEle {
+                display: block;
+                position: absolute;
+            }
         </style>
     </head>
     <body>
@@ -124,8 +128,8 @@
             }
 
             // Set this to the point speed you want
-            const MAIN_SPEED = 0.05;
-            const MAIN_SPEED_OBJ = 10;
+            let MAIN_SPEED = 0.05;
+            let MAIN_SPEED_OBJ = 10;
 
             class CordsPoint {
                 constructor(element) {
@@ -201,6 +205,35 @@
                     this.pointBoard.remove();
                 }
             }
+            
+            class SpeedUp {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.ele = document.createElement("div");
+                    document.body.appendChild(this.ele);
+                    this.ele.classList.add("fa-solid", "fa-fire", "fa-3x", "speedupEle");
+                    this.updatePosition();
+                }
+                move(xVar, yVar) {
+                    this.x += MAIN_SPEED_OBJ*xVar;
+                    this.y += MAIN_SPEED_OBJ*yVar;
+                    this.updatePosition();
+                }
+                updatePosition() {
+                    this.ele.style.left = this.x+"px";
+                    this.ele.style.top = this.y+"px"
+                }
+                use() {
+                    increaseSpeed(1.7);
+                    this.ele.remove();
+                }
+            }
+
+            function increaseSpeed(pc) {
+                MAIN_SPEED*=pc;
+                MAIN_SPEED_OBJ*=pc;
+            }
 
             const myPoint = new CordsPoint(document.getElementById("point"));
 
@@ -232,7 +265,6 @@
 
                 for (let eleBrd of elementsList) {
                     eleBrd.move(mx, my);
-                    let i = 0;
                     if (colision(eleBrd.ele, centerUser) && !endGame) {
                         ++count;
                         counterDOM.textContent = count;
@@ -241,13 +273,17 @@
                             clearInterval(intervalTimer);
                         }
                         eleBrd.remove();
-                        ++i;
+                    }
+                }
+                for (let _speedup of speedUpsList) {
+                    _speedup.move(mx, my);
+                    if (colision(_speedup.ele, centerUser) && !endGame) {
+                        _speedup.use();
                     }
                 }
                 requestAnimationFrame(movePoint);
             }
             requestAnimationFrame(movePoint);   
-
 
             var elementsList = [];
 
@@ -260,15 +296,23 @@
                 yNegative: -(DIM_BOARD-window.innerHeight)/2
             }
 
+            const NUM_SPEEDUPS = 3;
+            speedUpsList = [];
+
+            for (let i = 0; i < NUM_SPEEDUPS; ++i) {
+                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                speedUpsList.push(new SpeedUp(posX, posY));
+            }
+
             var upBoard = document.getElementById("upBoard");
 
             for (let i = 0; i < NUM_ELEMENTS; i++) {
-
                 let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
                 let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
 
                 elementsList.push(new Element(posX, posY));
-
             }
 
             var intervalTimer = setInterval(function() {
