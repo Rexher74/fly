@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>MyGame</title>
+        <title>Fly</title>
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
                 display: block;
                 background-color: black;
                 border-radius: 50%;
-                width: 4%;
+                width: 3%;
                 aspect-ratio: 1/1;
                 position: relative;
                 transform: translate(-50%, -50%);
@@ -32,7 +32,7 @@
                 display: block;
                 background-color: rgb(137, 137, 137);
                 border-radius: 50%;
-                width: 4%;
+                width: 3%;
                 aspect-ratio: 1/1;
                 position: absolute;
                 transform: translate(-50%, -50%);
@@ -49,14 +49,16 @@
                 position: absolute;
                 left: 50%;
                 top: 50%;
+                color: #2C5364;
             }
             .eleMap {
-                background: #90a6b5;
+                background: #2C5364;
                 position: absolute;
                 transform: translate(-50%, -50%);
                 border-radius: 50%;
                 width: 8vw;
                 aspect-ratio: 1/1;
+                box-shadow: 0px 0px 30px 0px rgba(0,0,0,0.75);
             }
             #counter {
                 font-family: "Montserrat";
@@ -85,6 +87,7 @@
             .speedupEle {
                 display: block;
                 position: absolute;
+                color: #fd6060;
             }
         </style>
     </head>
@@ -92,7 +95,7 @@
         <div id="upBoard">
             <div id="point"></div>
         </div>
-        <i id="centerUser" class="fa-solid fa-khanda fa-4x"></i>
+        <i id="centerUser" class="fa-solid fa-jet-fighter-up fa-4x"></i>
         <div id="counterDiv">
             <div id="counter">0</div>
         </div>
@@ -269,7 +272,7 @@
                         ++count;
                         counterDOM.textContent = count;
                         if (count == NUM_ELEMENTS) {
-                            alert("You completed the game!");
+                            alert(`Enhorabuena!\nHas completado el juego con una dificultad de ${NUM_ELEMENTS}!`);
                             clearInterval(intervalTimer);
                         }
                         eleBrd.remove();
@@ -287,7 +290,8 @@
 
             var elementsList = [];
 
-            const NUM_ELEMENTS = 20;
+            const NUM_ELEMENTS = prompt("Ingresa el grado de dificultad\n(Fácil: 5-15, Medio: 15-30, Difícil: 30-50, Imposible: +50)");
+
             const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
             const BOUNDS = {
                 xPositive: (DIM_BOARD-window.innerWidth)/2+window.innerWidth,
@@ -324,7 +328,6 @@
                     clearInterval(intervalTimer);
                 }
             }, 1000)
-
 
         </script>
     </body>
