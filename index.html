@@ -16,15 +16,25 @@
                 right: 10px;
                 width: 10vw;
                 aspect-ratio: 1/1;
-                background-color: rgb(255, 248, 238);
+                background-color: rgb(253, 238, 217);
                 border-radius: 10px;
             }
             #point {
+                display: block;
                 background-color: black;
                 border-radius: 50%;
                 width: 4%;
                 aspect-ratio: 1/1;
                 position: relative;
+                transform: translate(-50%, -50%);
+            }
+            .staticPoint {
+                display: block;
+                background-color: rgb(137, 137, 137);
+                border-radius: 50%;
+                width: 4%;
+                aspect-ratio: 1/1;
+                position: absolute;
                 transform: translate(-50%, -50%);
             }
             .center {
@@ -157,11 +167,23 @@
             }
 
             class Element {
-                constructor(x, y, element) {
+                constructor(x, y) {
                     this.x = x;
                     this.y = y;
+
+                    let relativeX = (x + (DIM_BOARD-window.innerWidth)/2)/DIM_BOARD;
+                    let relativeY = (y + (DIM_BOARD-window.innerHeight)/2)/DIM_BOARD;
+
+                    let newPoint = document.createElement("div");
+                    newPoint.classList.add("staticPoint");
+                    newPoint.style.top = relativeY*100+"%";
+                    newPoint.style.left = relativeX*100+"%";
+                    upBoard.appendChild(newPoint);
+
+                    this.pointBoard = newPoint;
                     this.ele = document.createElement("div");
                     document.body.appendChild(this.ele);
+
                     this.ele.classList.add("eleMap");
                     this.updatePosition();
                 }
@@ -173,6 +195,10 @@
                 updatePosition() {
                     this.ele.style.left = this.x+"px";
                     this.ele.style.top = this.y+"px"
+                }
+                remove() {
+                    this.ele.remove();
+                    this.pointBoard.remove();
                 }
             }
 
@@ -204,13 +230,18 @@
                 if (moves[0]) mx = -xVariation;
                 if (moves[1]) my = -yVariation;
 
-                for (let i = 0; i < NUM_ELEMENTS; ++i) {
-                    elementsList[i].move(mx, my);
-                    if (colision(elementsList[i].ele, centerUser) && !endGame) {
+                for (let eleBrd of elementsList) {
+                    eleBrd.move(mx, my);
+                    let i = 0;
+                    if (colision(eleBrd.ele, centerUser) && !endGame) {
                         ++count;
                         counterDOM.textContent = count;
-                        elementsList[i].ele.remove();
-                        elementsList[i] = new Element(randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive), randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive))
+                        if (count == NUM_ELEMENTS) {
+                            alert("You completed the game!");
+                            clearInterval(intervalTimer);
+                        }
+                        eleBrd.remove();
+                        ++i;
                     }
                 }
                 requestAnimationFrame(movePoint);
@@ -220,7 +251,7 @@
 
             var elementsList = [];
 
-            const NUM_ELEMENTS = 75;
+            const NUM_ELEMENTS = 20;
             const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
             const BOUNDS = {
                 xPositive: (DIM_BOARD-window.innerWidth)/2+window.innerWidth,
@@ -229,8 +260,15 @@
                 yNegative: -(DIM_BOARD-window.innerHeight)/2
             }
 
+            var upBoard = document.getElementById("upBoard");
+
             for (let i = 0; i < NUM_ELEMENTS; i++) {
-                elementsList.push(new Element(randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive), randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive)));
+
+                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                elementsList.push(new Element(posX, posY));
+
             }
 
             var intervalTimer = setInterval(function() {
