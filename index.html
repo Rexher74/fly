@@ -104,9 +104,66 @@
                 position: absolute;
                 color: #ec38bc;
             }
+            #chooseDificultyDiv{
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #difficultyContents {
+                padding: 2.5% 5%;
+                border-radius: 40px;
+                background: #ff00cc;  /* fallback for old browsers */
+                background: -webkit-linear-gradient(to right, #333399, #ff00cc);  /* Chrome 10-25, Safari 5.1-6 */
+                background: linear-gradient(to right, #333399, #ff00cc); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+                font-family: "Montserrat", sans-serif;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                z-index: 10;
+            }
+            #titleDifficulty {
+                font-size: 30px;
+                margin-bottom: 20px;
+                font-weight: 700;
+                color: white;
+            }
+            #inputDifficulty{
+                padding: 10px;
+                border-radius: 5px;
+                border: none;
+            }
+            #inputDifficulty:focus{
+                outline: none;
+            }
+            #playButton {
+                font-size: 20px;
+                padding: 20px;
+                border-radius: 10px;
+                color: #7238b1;
+                background-color: white;
+                display: block;
+                width: 50%;
+                margin-top: 20px;
+                font-weight: 800;
+                cursor: pointer;
+                transition: font-size .3s;
+            }
+            #playButton:hover{
+                font-size: 30px;
+            }
         </style>
     </head>
     <body>
+        <div id="chooseDificultyDiv">
+            <div id="difficultyContents">
+                <div id="titleDifficulty">¿Qué nivel quieres jugar?</div>
+                <input id="inputDifficulty" type="number">
+                <div id="playButton">PLAY</div>
+            </div>
+        </div>
         <div id="upBoard">
             <div id="point"></div>
         </div>
@@ -370,17 +427,8 @@
                 }
                 requestAnimationFrame(movePoint);
             }
-            requestAnimationFrame(movePoint);   
 
-            var elementsList = [];
-
-            const OPTIONS = {
-                NUM_ELEMENTS: prompt("Ingresa el grado de dificultad\n(Fácil: 15-25, Medio: 25-50, Difícil: 50-80, Imposible: +80)"),
-                NUM_SPEEDUPS: 5,
-                NUM_TIMES_BONUS: 5,
-                NUM_SPEEDUPS_MAX: 1,
-                NUM_TIMES_BONUS_MAX: 1,
-            }
+            var OPTIONS;
 
             const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
             const BOUNDS = {
@@ -389,55 +437,81 @@
                 yPositive: (DIM_BOARD-window.innerHeight)/2+window.innerHeight,
                 yNegative: -(DIM_BOARD-window.innerHeight)/2
             }
-
-            speedUpsList = [];
-
-            for (let i = 0; i < OPTIONS.NUM_SPEEDUPS; ++i) {
-                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
-                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
-
-                speedUpsList.push(new SpeedUp(posX, posY, false));
-            }
-            for (let i = 0; i < OPTIONS.NUM_SPEEDUPS_MAX; ++i) {
-                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
-                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
-
-                speedUpsList.push(new SpeedUp(posX, posY, true));
-            }
-
-            timeBonusList = [];
-
-            for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS; ++i) {
-                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
-                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
-
-                speedUpsList.push(new TimeBonus(posX, posY, false));
-            }
-            for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS_MAX; ++i) {
-                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
-                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
-
-                speedUpsList.push(new TimeBonus(posX, posY, true));
-            }
-
+            var elementsList;
+            var speedUpsList;
+            var timeBonusList;
             var upBoard = document.getElementById("upBoard");
 
-            for (let i = 0; i < OPTIONS.NUM_ELEMENTS; i++) {
-                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
-                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+            function generateBoard() {
+                speedUpsList = [];
 
-                elementsList.push(new Element(posX, posY));
+                for (let i = 0; i < OPTIONS.NUM_SPEEDUPS; ++i) {
+                    let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                    let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                    speedUpsList.push(new SpeedUp(posX, posY, false));
+                }
+                for (let i = 0; i < OPTIONS.NUM_SPEEDUPS_MAX; ++i) {
+                    let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                    let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                    speedUpsList.push(new SpeedUp(posX, posY, true));
+                }
+
+                timeBonusList = [];
+
+                for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS; ++i) {
+                    let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                    let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                    speedUpsList.push(new TimeBonus(posX, posY, false));
+                }
+                for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS_MAX; ++i) {
+                    let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                    let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                    speedUpsList.push(new TimeBonus(posX, posY, true));
+                }
+
+                elementsList = [];
+
+                for (let i = 0; i < OPTIONS.NUM_ELEMENTS; i++) {
+                    let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                    let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                    elementsList.push(new Element(posX, posY));
+                }
             }
 
-            var intervalTimer = setInterval(function() {
-                --timer;
-                timerDOM.textContent = timer;
-                if (timer == 0) {
-                    alert("Time Over!");
-                    endGame = true;
-                    clearInterval(intervalTimer);
+            var inputDifficulty = document.getElementById("inputDifficulty");
+            var playButton = document.getElementById("playButton");
+
+            playButton.addEventListener("click", startGame);
+
+            function startGame() {
+                let valueDiff = inputDifficulty.value;
+                document.getElementById("chooseDificultyDiv").style.display = "none";
+                
+                OPTIONS = {
+                    NUM_ELEMENTS: valueDiff,
+                    NUM_SPEEDUPS: 5,
+                    NUM_TIMES_BONUS: 5,
+                    NUM_SPEEDUPS_MAX: 1,
+                    NUM_TIMES_BONUS_MAX: 1,
                 }
-            }, 1000)
+                generateBoard();
+                var intervalTimer = setInterval(function() {
+                    --timer;
+                    timerDOM.textContent = timer;
+                    if (timer == 0) {
+                        alert("Time Over!");
+                        endGame = true;
+                        clearInterval(intervalTimer);
+                    }
+                }, 1000);
+
+                requestAnimationFrame(movePoint);  
+            }
 
         </script>
     </body>
