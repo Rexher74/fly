@@ -89,10 +89,20 @@
                 position: absolute;
                 color: #fd6060;
             }
+            .speedupEleMaxed{
+                display: block;
+                position: absolute;
+                color: #ff4000;
+            }
             .clockEle {
                 display: block;
                 position: absolute;
                 color: #db8dff;
+            }
+            .clockEleMaxed{
+                display: block;
+                position: absolute;
+                color: #ec38bc;
             }
         </style>
     </head>
@@ -202,11 +212,27 @@
                 move(xVar, yVar) {
                     this.x += MAIN_SPEED_OBJ*xVar;
                     this.y += MAIN_SPEED_OBJ*yVar;
-                    this.updatePosition();
+                    if (this.inScreen()) {
+                        this.updatePosition();
+                    }
                 }
                 updatePosition() {
                     this.ele.style.left = this.x+"px";
                     this.ele.style.top = this.y+"px"
+                }
+                inScreen() {
+                    let widthEle = this.ele.getBoundingClientRect().width; // width == height
+                    let margin = widthEle; // We set a margin
+
+                    if (this.x > (-widthEle/2)-margin &&
+                        this.x < window.innerWidth+(widthEle/2)+margin &&
+                        this.y > (-widthEle/2)-margin &&
+                        this.y < window.innerHeight+(widthEle/2)+margin) {
+                            return true;
+                        }
+                    else {
+                        return false;
+                    }
                 }
                 remove() {
                     this.ele.remove();
@@ -215,12 +241,18 @@
             }
             
             class SpeedUp {
-                constructor(x, y) {
+                constructor(x, y, maxed) {
                     this.x = x;
                     this.y = y;
                     this.ele = document.createElement("div");
                     document.body.appendChild(this.ele);
-                    this.ele.classList.add("fa-solid", "fa-fire", "fa-3x", "speedupEle");
+                    this.maxed = maxed;
+                    if (!maxed) {
+                        this.ele.classList.add("fa-solid", "fa-fire", "fa-3x", "speedupEle");
+                    }
+                    else {
+                        this.ele.classList.add("fa-solid", "fa-fire", "fa-5x", "speedupEleMaxed");
+                    }
                     this.updatePosition();
                 }
                 move(xVar, yVar) {
@@ -233,18 +265,27 @@
                     this.ele.style.top = this.y+"px"
                 }
                 use() {
-                    increaseSpeed(1.4);
+                    let velUpVal;
+                    if (this.maxed) velUpVal = 1.75;
+                    else velUpVal = 1.3;
+                    increaseSpeed(velUpVal);
                     this.ele.remove();
                 }
             }
 
             class TimeBonus {
-                constructor(x, y) {
+                constructor(x, y, maxed) {
                     this.x = x;
                     this.y = y;
                     this.ele = document.createElement("div");
                     document.body.appendChild(this.ele);
-                    this.ele.classList.add("fa-solid", "fa-clock", "fa-3x", "clockEle");
+                    this.maxed = maxed;
+                    if (!maxed) {
+                        this.ele.classList.add("fa-solid", "fa-clock", "fa-3x", "clockEle");
+                    }
+                    else {
+                        this.ele.classList.add("fa-solid", "fa-clock", "fa-5x", "clockEleMaxed");
+                    }
                     this.updatePosition();
                 }
                 move(xVar, yVar) {
@@ -257,7 +298,10 @@
                     this.ele.style.top = this.y+"px"
                 }
                 use() {
-                    addTime(10);
+                    let timeUpVal;
+                    if (this.maxed) timeUpVal = 30;
+                    else timeUpVal = 10;
+                    addTime(timeUpVal);
                     this.ele.remove();
                 }
             }
@@ -305,8 +349,8 @@
                     if (colision(eleBrd.ele, centerUser) && !endGame) {
                         ++count;
                         counterDOM.textContent = count;
-                        if (count == NUM_ELEMENTS) {
-                            alert(`Enhorabuena!\nHas completado el juego con una dificultad de ${NUM_ELEMENTS}!`);
+                        if (count == OPTIONS.NUM_ELEMENTS) {
+                            alert(`Enhorabuena!\nHas completado el juego con una dificultad de ${OPTIONS.NUM_ELEMENTS}!`);
                             clearInterval(intervalTimer);
                         }
                         eleBrd.remove();
@@ -330,7 +374,13 @@
 
             var elementsList = [];
 
-            const NUM_ELEMENTS = prompt("Ingresa el grado de dificultad\n(Fácil: 10-20, Medio: 20-40, Difícil: 40-60, Imposible: +60)");
+            const OPTIONS = {
+                NUM_ELEMENTS: prompt("Ingresa el grado de dificultad\n(Fácil: 15-25, Medio: 25-50, Difícil: 50-80, Imposible: +80)"),
+                NUM_SPEEDUPS: 5,
+                NUM_TIMES_BONUS: 5,
+                NUM_SPEEDUPS_MAX: 1,
+                NUM_TIMES_BONUS_MAX: 1,
+            }
 
             const DIM_BOARD = (MAIN_SPEED_OBJ*100/MAIN_SPEED);
             const BOUNDS = {
@@ -340,29 +390,39 @@
                 yNegative: -(DIM_BOARD-window.innerHeight)/2
             }
 
-            const NUM_SPEEDUPS = 5;
             speedUpsList = [];
 
-            for (let i = 0; i < NUM_SPEEDUPS; ++i) {
+            for (let i = 0; i < OPTIONS.NUM_SPEEDUPS; ++i) {
                 let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
                 let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
 
-                speedUpsList.push(new SpeedUp(posX, posY));
+                speedUpsList.push(new SpeedUp(posX, posY, false));
+            }
+            for (let i = 0; i < OPTIONS.NUM_SPEEDUPS_MAX; ++i) {
+                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                speedUpsList.push(new SpeedUp(posX, posY, true));
             }
 
-            const NUM_TIMES_BONUS = 5;
             timeBonusList = [];
 
-            for (let i = 0; i < NUM_TIMES_BONUS; ++i) {
+            for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS; ++i) {
                 let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
                 let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
 
-                speedUpsList.push(new TimeBonus(posX, posY));
+                speedUpsList.push(new TimeBonus(posX, posY, false));
+            }
+            for (let i = 0; i < OPTIONS.NUM_TIMES_BONUS_MAX; ++i) {
+                let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
+                let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
+
+                speedUpsList.push(new TimeBonus(posX, posY, true));
             }
 
             var upBoard = document.getElementById("upBoard");
 
-            for (let i = 0; i < NUM_ELEMENTS; i++) {
+            for (let i = 0; i < OPTIONS.NUM_ELEMENTS; i++) {
                 let posX = randomIntFromInterval(BOUNDS.xNegative, BOUNDS.xPositive);
                 let posY = randomIntFromInterval(BOUNDS.yNegative, BOUNDS.yPositive);
 
